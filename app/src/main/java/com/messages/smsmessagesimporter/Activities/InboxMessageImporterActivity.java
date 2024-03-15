@@ -19,8 +19,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -30,6 +28,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.messages.smsmessagesimporter.DataHandler.FileHandler;
+import com.messages.smsmessagesimporter.DataHandler.JSONFileProperties;
 import com.messages.smsmessagesimporter.DataHandler.JsonSMSDataHandler;
 import com.messages.smsmessagesimporter.R;
 
@@ -39,36 +38,35 @@ import java.util.Objects;
 public class InboxMessageImporterActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_SMS_PERMISSION = 101;
-    private static final int REQUEST_CODE_PHONE_STATE_PERMISSION = 102;
-    private static final int REQUEST_CODE_STORAGE_PERMISSION = 103;
-    private static final int STORAGE_PERMISSION_CODE = 23;
+    private static final int STORAGE_PERMISSION_CODE = 102;
 
     private final String[] smsPermissions = new String[]{Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS};
 
     private FileHandler fileHandler;
+    private PermissionsManager permissionsManager;
+    private JSONFileProperties jsonFileProperties;
+
     TextView fileText = null;
     private ActivityResultLauncher<Intent> intentLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+        setContentView(R.layout.activity_inbox_message_importer);
+        fileHandler = new FileHandler(this);
+        permissionsManager = new PermissionsManager(this);
         // Check and request SMS permissions
         if (!checkSmsPermissions()) {
             requestSmsPermissions();
         }
-
         if (!checkStoragePermissions()) {
             requestForStoragePermissions();
         }
-
         prepareIntentLauncher();
         askDefaultSmsHandlerPermission();
 
         Button button1 = findViewById(R.id.import_messages);
         fileText = findViewById(R.id.file_id);
-        fileHandler = new FileHandler(this);
 
         button1.setOnClickListener(v -> fileHandler.pickFile());
     }
@@ -76,21 +74,21 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(data == null){
+            return;
+        }
 
-        fileHandler.handleActivityResult(requestCode, resultCode, data);
-        String selectedFilePath = fileHandler.selectedFilePath;
-        //selectedFilePath = "/storage/emulated/0/sms backup/latest_sms_back.bak";
+        jsonFileProperties = new JSONFileProperties();
+        fileHandler.handleActivityResult(requestCode, resultCode, data, jsonFileProperties);
+        Log.i("selectedFilePath: ", jsonFileProperties.getJsonFilePath());
 
-        if (!Objects.equals(selectedFilePath, "Unknown")) {
-            System.out.println("Selected file path: " + selectedFilePath);
-            fileText.setText(selectedFilePath);
-            Log.i("selectedFilePath: ", selectedFilePath);
-            new Thread(new JsonSMSDataHandler(this, selectedFilePath)).start();
+        if (!Objects.equals(jsonFileProperties.getJsonFilePath(), "No file selected !")) {
+            fileText.setText(jsonFileProperties.getJsonFilePath());
+            new Thread(new JsonSMSDataHandler(this, jsonFileProperties)).start();
         } else {
-            fileText.setText(selectedFilePath);
+            fileText.setText(jsonFileProperties.getJsonFilePath());
         }
     }
-
 
     private boolean checkSmsPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -222,23 +220,18 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
     }
 
     private final ActivityResultLauncher<Intent> storageActivityResultLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    //Android is 11 (R) or above
+                    if (Environment.isExternalStorageManager()) {
+                        //Manage External Storage Permissions Granted
+                        Log.d(TAG, "onActivityResult: Manage External Storage Permissions Granted");
+                    } else {
+                        Toast.makeText(InboxMessageImporterActivity.this, "Storage Permissions Denied", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    //Below android 11
 
-                        @Override
-                        public void onActivityResult(ActivityResult o) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                //Android is 11 (R) or above
-                                if (Environment.isExternalStorageManager()) {
-                                    //Manage External Storage Permissions Granted
-                                    Log.d(TAG, "onActivityResult: Manage External Storage Permissions Granted");
-                                } else {
-                                    Toast.makeText(InboxMessageImporterActivity.this, "Storage Permissions Denied", Toast.LENGTH_SHORT).show();
-                                }
-                            } else {
-                                //Below android 11
-
-                            }
-                        }
-                    });
+                }
+            });
 }
