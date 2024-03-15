@@ -9,7 +9,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.Telephony;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.messages.smsmessagesimporter.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,25 +24,37 @@ import java.io.IOException;
 
 public class JsonSMSDataHandler implements Runnable {
     private final Activity activity;
-    private final String filePath;
+    private JSONFileProperties jsonFileProps;
+    private TextView numOfMessagesWritten = null;
+    private TextView jsonFileParsing = null;
 
-    public JsonSMSDataHandler(Activity activity, String filePath) {
+    public JsonSMSDataHandler(Activity activity, JSONFileProperties jsonFileProperties) {
         this.activity = activity;
-        this.filePath = filePath;
+        this.jsonFileProps = jsonFileProperties;
     }
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            Log.i("SMS Parsing:", "Completed");
-            Toast.makeText(activity, "Messages imported successfully", Toast.LENGTH_SHORT).show();
+            numOfMessagesWritten = activity.findViewById(R.id.num_messages_written);
+            jsonFileParsing = activity.findViewById(R.id.file_parsing);
+
+            if (jsonFileProps.getJsonParseSuccess()) {
+                if (jsonFileProps.getTotalMessagesImported() == jsonFileProps.getTotalMessages()) {
+                    Toast.makeText(activity, "Messages imported successfully", Toast.LENGTH_SHORT).show();
+                } else if (jsonFileProps.getTotalMessagesImported() > 0) {
+                    Toast.makeText(activity, "Messages imported partially", Toast.LENGTH_SHORT).show();
+                }
+            }
+            jsonFileParsing.setText("File parsing: "+(jsonFileProps.getJsonParseSuccess() ? "Success" : "Failure"));
+            numOfMessagesWritten.setText("Total Messages Written: " + jsonFileProps.getTotalMessagesImported() + "/" + jsonFileProps.getTotalMessages());
         }
     };
 
     @Override
     public void run() {
         try {
-            String jsonString = readJsonFile(filePath);
+            String jsonString = readJsonFile(jsonFileProps.getJsonFilePath());
             parseJsonArray(jsonString);
         } catch (JSONException | IOException e) {
             e.printStackTrace();
@@ -66,12 +81,16 @@ public class JsonSMSDataHandler implements Runnable {
             jsonArray = new JSONArray(jsonString);
         } catch (Exception e) {
             e.printStackTrace();
+            jsonFileProps.setJsonParseSuccess(false);
         }
-        if (jsonArray != null) {
-            for (int i = 0; i < jsonArray.length(); i++) {
-                try {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
 
+        if (jsonArray != null) {
+            jsonFileProps.setTotalMessages(jsonArray.length());
+            for (int i = 0; i < jsonArray.length(); i++) {
+                boolean isMessageWritten = true;
+                String errorMessage = "No error !";
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                try {
                     int id = jsonObject.getInt("_id");
                     String address = jsonObject.getString("address");
                     String body = jsonObject.getString("body");
@@ -92,15 +111,23 @@ public class JsonSMSDataHandler implements Runnable {
                     System.out.println("Thread ID: " + threadId);
                     System.out.println("Date Sent: " + dateSent);
                     System.out.println("-----------------------------");
-                    writeToInbox(address, body, dateSent);
+
+                    isMessageWritten = writeToInbox(id, address, body, dateSent);
+                    if (!isMessageWritten) errorMessage = "Message not imported";
                 } catch (Exception e) {
                     Log.e("JSON Error:", e.getMessage());
+                    errorMessage = e.getMessage();
+                    isMessageWritten = false;
+                }
+                if (!isMessageWritten) {
+                    jsonFileProps.setMessageToNotImported((i + 1), errorMessage);
                 }
             }
+            jsonFileProps.setTotalMessagesImported(jsonFileProps.getTotalMessages() - jsonFileProps.getNumOfMsgNotImported());
         }
     }
 
-    private void writeToInbox(String phoneNumber, String messageBody, long dateSent) {
+    private Boolean writeToInbox(int messageId, String phoneNumber, String messageBody, long dateSent) {
         try {
             ContentResolver contentResolver = activity.getContentResolver();
             ContentValues values = new ContentValues();
@@ -114,14 +141,16 @@ public class JsonSMSDataHandler implements Runnable {
             // Insert the new SMS message into the inbox
             Uri uri = contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values);
 
-            if (uri != null) {
-                Log.d("SMS", "Message inserted successfully: " + uri.toString());
-            } else {
-                Log.e("SMS", "Failed to insert message");
+            if (uri == null) {
+                Log.e("SMS", "Failed to insert message:" + messageId);
+                return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+
+        return true;
     }
 
 }

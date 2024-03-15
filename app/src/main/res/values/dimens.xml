@@ -1,4 +1,6 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="sms_item_padding">20dp</dimen>
+    <dimen name="_16dp">16dp</dimen>
+    <dimen name="_15sp">15sp</dimen>
 </resources>

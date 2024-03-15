@@ -9,4 +9,6 @@
     <string name="button_2">Change default SMS app</string>
     <string name="textview">No file selected.!</string>
     <string name="title_activity_home">HomeActivity</string>
+    <string name="file_parsing">File Parsing</string>
+    <string name="number_of_messages_written">Number of Messages Written</string>
 </resources>

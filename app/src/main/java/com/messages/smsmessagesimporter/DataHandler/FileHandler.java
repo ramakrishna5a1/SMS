@@ -11,7 +11,6 @@ public class FileHandler {
     private static final int REQUEST_PICK_FILE = 123;
 
     private final Activity activity;
-    public String selectedFilePath = "Unknown";
 
     public FileHandler(Activity activity) {
         this.activity = activity;
@@ -26,13 +25,15 @@ public class FileHandler {
         activity.startActivityForResult(bakIntent, REQUEST_PICK_FILE);
     }
 
-    public void handleActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void handleActivityResult(int requestCode, int resultCode, @Nullable Intent data, JSONFileProperties jsonFileProperties) {
         if (requestCode == REQUEST_PICK_FILE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 Uri uri = data.getData();
+                String selectedFilePath = "No file selected !";
                 if (uri != null) {
                     selectedFilePath = RealPathUtil.getRealPath(activity, uri);
                 }
+                jsonFileProperties.setJsonFilePath(selectedFilePath);
             }
         }
     }
