@@ -24,7 +24,7 @@ public class HomeActivity extends AppCompatActivity {
             return insets;
         });
 
-        Intent intent = new Intent(HomeActivity.this, InboxMessageImporterActivity.class);
+        Intent intent = new Intent(this, InboxMessageImporterActivity.class);
         startActivity(intent);
         finish();
     }
