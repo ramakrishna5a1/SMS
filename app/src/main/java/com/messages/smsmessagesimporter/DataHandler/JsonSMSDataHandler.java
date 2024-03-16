@@ -1,8 +1,10 @@
 package com.messages.smsmessagesimporter.DataHandler;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,6 +23,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class JsonSMSDataHandler implements Runnable {
     private final Activity activity;
@@ -46,7 +51,7 @@ public class JsonSMSDataHandler implements Runnable {
                     Toast.makeText(activity, "Messages imported partially", Toast.LENGTH_SHORT).show();
                 }
             }
-            jsonFileParsing.setText("File parsing: "+(jsonFileProps.getJsonParseSuccess() ? "Success" : "Not Successful"));
+            jsonFileParsing.setText("File parsing: " + (jsonFileProps.getJsonParseSuccess() ? "Success" : "Not Successful"));
             numOfMessagesWritten.setText("Total Messages Written: " + jsonFileProps.getTotalMessagesImported() + "/" + jsonFileProps.getTotalMessages());
         }
     };
@@ -91,16 +96,20 @@ public class JsonSMSDataHandler implements Runnable {
                 String errorMessage = "No error !";
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 try {
-                    int id = jsonObject.getInt("_id");
+                    int id = 0;//jsonObject.getInt("_id");
                     String address = jsonObject.getString("address");
                     String body = jsonObject.getString("body");
-                    String date = jsonObject.getString("date");
-                    int type = jsonObject.getInt("type");
-                    String status = jsonObject.getString("status");
-                    String subId = jsonObject.getString("sub_id");
-                    int threadId = jsonObject.getInt("thread_id");
-                    long dateSent = jsonObject.getLong("date_sent");
+                    /*
+                     * Date format from JSON data is "dd/MM/yyyy HH:mm:ss"
+                     * So convert it into long before writing to inbox
+                     * */
+                    String dateSentInString = jsonObject.getString("date");
 
+                    final String dateFormat = "dd/MM/yyyy HH:mm:ss";
+                    LocalDateTime localDateTime = LocalDateTime.parse(dateSentInString, DateTimeFormatter.ofPattern(dateFormat));
+                        long dateSent = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+                    /*
                     System.out.println("ID: " + id);
                     System.out.println("Address: " + address);
                     System.out.println("Body: " + body);
@@ -111,6 +120,7 @@ public class JsonSMSDataHandler implements Runnable {
                     System.out.println("Thread ID: " + threadId);
                     System.out.println("Date Sent: " + dateSent);
                     System.out.println("-----------------------------");
+                    */
 
                     isMessageWritten = writeToInbox(id, address, body, dateSent);
                     if (!isMessageWritten) errorMessage = "Message not imported";
@@ -133,6 +143,7 @@ public class JsonSMSDataHandler implements Runnable {
             ContentValues values = new ContentValues();
 
             // Set the message values
+            //values.put(Telephony.Sms._ID, messageId);
             values.put(Telephony.Sms.ADDRESS, phoneNumber);
             values.put(Telephony.Sms.BODY, messageBody);
             values.put(Telephony.Sms.DATE, dateSent);
@@ -140,20 +151,39 @@ public class JsonSMSDataHandler implements Runnable {
 
             // Insert the new SMS message into the inbox
             Uri uri = contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values);
-            Log.e("SMS inserted:",""+uri);
+            Log.i("SMS inserted:", "" + uri);
 
-            if (uri == null) {
-                Log.e("SMS", "URI is NULL");
-                return false;
-            }else {
+            if (uri != null) {
                 // Extract the ID from the URI
                 long insertedId = Long.parseLong(uri.getLastPathSegment());
+                //long threadId = getThreadIdForMessage(insertedId);
                 Log.d("SMS", "Message inserted successfully with ID: " + insertedId);
                 return insertedId != 0;
+            } else {
+                Log.e("SMS", "URI is NULL");
+                return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @SuppressLint("Range")
+    public long getThreadIdForMessage(long messageId) {
+        long threadId = -1;
+        Cursor cursor = activity.getContentResolver().query(
+                Telephony.Sms.CONTENT_URI,
+                new String[]{Telephony.Sms.THREAD_ID},
+                Telephony.Sms._ID + " = ?",
+                new String[]{String.valueOf(messageId)},
+                null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            threadId = cursor.getLong(cursor.getColumnIndex(Telephony.Sms.THREAD_ID));
+            cursor.close();
+        }
+
+        return threadId;
     }
 }

@@ -80,9 +80,19 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
 
     private void UpdatePermissionsText() {
         String permissionsGranted = "";
-        permissionsGranted = permissionsGranted.concat(String.format("SMS Permission %s\n", (checkSmsPermissions() ? "Granted" : "Not granted")));
-        permissionsGranted = permissionsGranted.concat(String.format("Storage Permission %s\n", (checkStoragePermissions() ? "Granted" : "Not granted")));
-        permissionsGranted = permissionsGranted.concat(String.format("Default SMS App Permission %s", (checkDefaultSmsAppPermissions() ? "Granted" : "Not granted")));
+        boolean[] allPermissionsGranted = new boolean[3];
+        allPermissionsGranted[0] = checkSmsPermissions();
+        allPermissionsGranted[1] = checkStoragePermissions();
+        allPermissionsGranted[2] = checkDefaultSmsAppPermissions();
+
+        if(allPermissionsGranted[0] && allPermissionsGranted[1] && allPermissionsGranted[2]){
+            permissionsGranted = permissionsGranted.concat("All permissions are granted !");
+        }else{
+            permissionsGranted = permissionsGranted.concat(String.format("SMS Permission %s\n", (checkSmsPermissions() ? "Granted" : "Not granted")));
+            permissionsGranted = permissionsGranted.concat(String.format("Storage Permission %s\n", (checkStoragePermissions() ? "Granted" : "Not granted")));
+            permissionsGranted = permissionsGranted.concat(String.format("Default SMS App Permission %s\n\n", (checkDefaultSmsAppPermissions() ? "Granted" : "Not granted")));
+            permissionsGranted = permissionsGranted.concat("Note: Please close and open App Again.!!");
+        }
         permissionsView.setText(permissionsGranted);
     }
 
