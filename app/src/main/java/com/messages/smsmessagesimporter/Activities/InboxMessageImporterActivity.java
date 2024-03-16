@@ -101,7 +101,7 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
                 jsonFileProperties.setJsonFilePath("Unable to select file");
                 return;
             }
-            fileHandler.handleActivityResult(requestCode, resultCode, data);
+            fileHandler.handleActivityResult(requestCode, resultCode, data, jsonFileProperties);
             Log.i("selectedFilePath: ", jsonFileProperties.getJsonFilePath());
 
             if (!Objects.equals(jsonFileProperties.getJsonFilePath(), "No file selected !")) {
