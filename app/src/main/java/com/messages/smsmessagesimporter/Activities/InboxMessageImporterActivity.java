@@ -40,12 +40,12 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_SMS_PERMISSION = 101;
     private static final int STORAGE_PERMISSION_CODE = 102;
+    private static final int DEFAULT_SMS_APP_PERMISSION_CODE = 102;
+    private static final int REQUEST_PICK_FILE = 123;
 
     private final String[] smsPermissions = new String[]{Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS};
 
     private FileHandler fileHandler;
-    private PermissionsManager permissionsManager;
-    private JSONFileProperties jsonFileProperties;
 
     TextView fileText = null;
     TextView permissionsView = null;
@@ -59,51 +59,68 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inbox_message_importer);
         fileHandler = new FileHandler(this);
-        permissionsManager = new PermissionsManager(this);
         button1 = findViewById(R.id.import_messages);
-        button1.setEnabled(false);
+        //button1.setEnabled(false);
         fileText = findViewById(R.id.file_id);
         permissionsView = findViewById(R.id.permissions_acquired);
 
         // Check and request SMS permissions
         if (!checkSmsPermissions()) {
             requestSmsPermissions();
-        }else {
-            numOfAcquiredPermissions++;
         }
         if (!checkStoragePermissions()) {
             requestForStoragePermissions();
-        }else{
-            numOfAcquiredPermissions++;
         }
         prepareIntentLauncher();
         askDefaultSmsHandlerPermission();
+        UpdatePermissionsText();
 
         button1.setOnClickListener(v -> fileHandler.pickFile());
     }
-    private void UpdatePermissionsText(){
-        if(numOfAcquiredPermissions == 3){
-            permissionsView.setText("All Permissions are granted !");
-            button1.setEnabled(true);
-        }else{
-            permissionsView.setText("Permissions acquired: "+numOfAcquiredPermissions+"/3\nClose App and open again.");
-        }
+
+    private void UpdatePermissionsText() {
+        String permissionsGranted = "";
+        permissionsGranted = permissionsGranted.concat(String.format("SMS Permission %s\n", (checkSmsPermissions() ? "Granted" : "Not granted")));
+        permissionsGranted = permissionsGranted.concat(String.format("Storage Permission %s\n", (checkStoragePermissions() ? "Granted" : "Not granted")));
+        permissionsGranted = permissionsGranted.concat(String.format("Default SMS App Permission %s", (checkDefaultSmsAppPermissions() ? "Granted" : "Not granted")));
+        permissionsView.setText(permissionsGranted);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(data == null){
-            return;
-        }
-        jsonFileProperties = new JSONFileProperties();
-        fileHandler.handleActivityResult(requestCode, resultCode, data, jsonFileProperties);
-        Log.i("selectedFilePath: ", jsonFileProperties.getJsonFilePath());
 
-        if (!Objects.equals(jsonFileProperties.getJsonFilePath(), "No file selected !")) {
-            fileText.setText(jsonFileProperties.getJsonFilePath());
-            new Thread(new JsonSMSDataHandler(this, jsonFileProperties)).start();
+        if (requestCode == DEFAULT_SMS_APP_PERMISSION_CODE) {
+            if (resultCode == RESULT_OK) {
+                numOfAcquiredPermissions++;
+            }
+            UpdatePermissionsText();
+        } else if (requestCode == REQUEST_PICK_FILE) {
+            JSONFileProperties jsonFileProperties = new JSONFileProperties();
+            if (resultCode != RESULT_OK) {
+                jsonFileProperties.setJsonFilePath("Unable to select file");
+                return;
+            }
+            fileHandler.handleActivityResult(requestCode, resultCode, data, jsonFileProperties);
+            Log.i("selectedFilePath: ", jsonFileProperties.getJsonFilePath());
+
+            if (!Objects.equals(jsonFileProperties.getJsonFilePath(), "No file selected !")) {
+                fileText.setText(jsonFileProperties.getJsonFilePath());
+                new Thread(new JsonSMSDataHandler(this, jsonFileProperties)).start();
+            } else {
+                fileText.setText(jsonFileProperties.getJsonFilePath());
+            }
+        }
+    }
+
+    private boolean checkDefaultSmsAppPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            RoleManager roleManager = this.getSystemService(RoleManager.class);
+            return roleManager.isRoleHeld(RoleManager.ROLE_SMS);
         } else {
-            fileText.setText(jsonFileProperties.getJsonFilePath());
+            // For versions before Android Q, check if the app is the default SMS app by package name
+            PackageManager packageManager = this.getPackageManager();
+            return this.getPackageName().equals(Telephony.Sms.getDefaultSmsPackage(this));
         }
     }
 
@@ -112,8 +129,10 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
             int sendSmsPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
             int readSmsPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
             return sendSmsPermission == PackageManager.PERMISSION_GRANTED && readSmsPermission == PackageManager.PERMISSION_GRANTED;
+        } else {
+            // Permissions are granted automatically on versions below M
+            return true;
         }
-        return true; // Permissions are granted automatically on versions below M
     }
 
     private void requestSmsPermissions() {
@@ -133,57 +152,46 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
                 handleStoragePermissionsResult(grantResults);
                 break;
         }
+        UpdatePermissionsText();
     }
 
     private void handleSmsPermissionsResult(int[] grantResults) {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             // SMS permissions granted
-            numOfAcquiredPermissions++;
             Toast.makeText(this, "SMS permissions granted", Toast.LENGTH_SHORT).show();
         } else {
             // SMS permissions denied
             Toast.makeText(this, "SMS permissions denied", Toast.LENGTH_SHORT).show();
         }
-        UpdatePermissionsText();
     }
 
     private void handleStoragePermissionsResult(int[] grantResults) {
         if (grantResults.length > 0) {
             boolean write = grantResults[0] == PackageManager.PERMISSION_GRANTED;
             boolean read = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-
             if (read && write) {
-                numOfAcquiredPermissions++;
                 Toast.makeText(InboxMessageImporterActivity.this, "Storage Permissions Granted", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(InboxMessageImporterActivity.this, "Storage Permissions Denied", Toast.LENGTH_SHORT).show();
             }
         }
-        UpdatePermissionsText();
     }
 
     private void prepareIntentLauncher() {
         intentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK) {
-                numOfAcquiredPermissions++;
                 Toast.makeText(InboxMessageImporterActivity.this, "Success requesting ROLE_SMS!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(InboxMessageImporterActivity.this, "Failed requesting ROLE_SMS!", Toast.LENGTH_SHORT).show();
             }
             UpdatePermissionsText();
         });
-
     }
 
     private void askDefaultSmsHandlerPermission() {
-        Log.i("permission:", "1");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             RoleManager roleManager = getSystemService(RoleManager.class);
-            Log.i("permission:", "1");
-
-            // Replace 'ROLE_SMS' with the actual SMS role you are checking for
             String role = ROLE_SMS;
-
             // Check if the app has permission to be the default SMS app
             boolean isRoleAvailable = roleManager.isRoleAvailable(role);
             if (isRoleAvailable) {
@@ -198,14 +206,14 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
                 }
             }
         } else {
+            Log.i("DefaultApp:", "Build version is less than Q");
             Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
             intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, getPackageName());
-            startActivityForResult(intent, 1001);
+            startActivityForResult(intent, DEFAULT_SMS_APP_PERMISSION_CODE);
         }
     }
 
     public boolean checkStoragePermissions() {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             //Android is 11 (R) or above
             return Environment.isExternalStorageManager();
@@ -213,7 +221,6 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
             //Below android 11
             int write = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
             int read = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-
             return read == PackageManager.PERMISSION_GRANTED && write == PackageManager.PERMISSION_GRANTED;
         }
     }
@@ -236,10 +243,7 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
             //Below android 11
             ActivityCompat.requestPermissions(
                     this,
-                    new String[]{
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                    },
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     STORAGE_PERMISSION_CODE
             );
         }
@@ -257,7 +261,6 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
                     }
                 } else {
                     //Below android 11
-
                 }
             });
 }

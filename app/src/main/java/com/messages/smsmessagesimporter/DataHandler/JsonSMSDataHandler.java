@@ -46,7 +46,7 @@ public class JsonSMSDataHandler implements Runnable {
                     Toast.makeText(activity, "Messages imported partially", Toast.LENGTH_SHORT).show();
                 }
             }
-            jsonFileParsing.setText("File parsing: "+(jsonFileProps.getJsonParseSuccess() ? "Success" : "Failure"));
+            jsonFileParsing.setText("File parsing: "+(jsonFileProps.getJsonParseSuccess() ? "Success" : "Not Successful"));
             numOfMessagesWritten.setText("Total Messages Written: " + jsonFileProps.getTotalMessagesImported() + "/" + jsonFileProps.getTotalMessages());
         }
     };
@@ -58,6 +58,7 @@ public class JsonSMSDataHandler implements Runnable {
             parseJsonArray(jsonString);
         } catch (JSONException | IOException e) {
             e.printStackTrace();
+            jsonFileProps.setJsonParseSuccess(false);
         }
         // Notify the UI thread that parsing is completed
         handler.sendEmptyMessage(0);
@@ -65,7 +66,6 @@ public class JsonSMSDataHandler implements Runnable {
 
     private String readJsonFile(String filePath) throws IOException {
         StringBuilder content = new StringBuilder();
-
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -140,17 +140,20 @@ public class JsonSMSDataHandler implements Runnable {
 
             // Insert the new SMS message into the inbox
             Uri uri = contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values);
+            Log.e("SMS inserted:",""+uri);
 
             if (uri == null) {
-                Log.e("SMS", "Failed to insert message:" + messageId);
+                Log.e("SMS", "URI is NULL");
                 return false;
+            }else {
+                // Extract the ID from the URI
+                long insertedId = Long.parseLong(uri.getLastPathSegment());
+                Log.d("SMS", "Message inserted successfully with ID: " + insertedId);
+                return insertedId != 0;
             }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-
-        return true;
     }
-
 }

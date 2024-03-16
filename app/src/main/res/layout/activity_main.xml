@@ -24,9 +24,34 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:text="Permissions"
-                android:textSize="@dimen/_15sp" />
+                android:textSize="@dimen/info_text_size" />
 
             <!-- Add your permission-related UI components here -->
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Card for file full path -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_16dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/file_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="@string/textview"
+                android:textSize="@dimen/info_text_size" />
+
+            <!-- Add your UI components related to number of messages written here -->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -49,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:text="@string/file_parsing"
-                android:textSize="@dimen/_15sp" />
+                android:textSize="@dimen/info_text_size" />
 
             <!-- Add your JSON parsing related UI components here -->
         </LinearLayout>
@@ -74,37 +99,11 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:text="@string/number_of_messages_written"
-                android:textSize="@dimen/_15sp" />
+                android:textSize="@dimen/info_text_size" />
 
             <!-- Add your UI components related to number of messages written here -->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
-    <!-- Card for Number of Messages Written -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_16dp"
-        android:background="@android:color/white"
-        android:elevation="4dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/file_id"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:text="@string/textview"
-                android:textSize="@dimen/_15sp" />
-
-            <!-- Add your UI components related to number of messages written here -->
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
 
     <Button
         android:id="@+id/import_messages"
