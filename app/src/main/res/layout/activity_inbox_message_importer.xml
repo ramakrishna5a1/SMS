@@ -9,7 +9,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_16dp"
+        android:layout_marginBottom="@dimen/card_bottom_padding"
         android:background="@android:color/white"
         android:elevation="4dp">
 
@@ -22,7 +22,7 @@
                 android:id="@+id/permissions_acquired"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:padding="@dimen/info_text_padding"
                 android:text="Permissions"
                 android:textSize="@dimen/info_text_size" />
 
@@ -34,7 +34,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_16dp"
+        android:layout_marginBottom="@dimen/card_bottom_padding"
         android:background="@android:color/white"
         android:elevation="4dp">
 
@@ -47,7 +47,7 @@
                 android:id="@+id/file_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:padding="@dimen/info_text_padding"
                 android:text="@string/textview"
                 android:textSize="@dimen/info_text_size" />
 
@@ -59,7 +59,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_16dp"
+        android:layout_marginBottom="@dimen/card_bottom_padding"
         android:background="@android:color/white"
         android:elevation="4dp">
 
@@ -72,7 +72,7 @@
                 android:id="@+id/file_parsing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:padding="@dimen/info_text_padding"
                 android:text="@string/file_parsing"
                 android:textSize="@dimen/info_text_size" />
 
@@ -84,7 +84,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_16dp"
+        android:layout_marginBottom="@dimen/card_bottom_padding"
         android:background="@android:color/white"
         android:elevation="4dp">
 
@@ -97,7 +97,7 @@
                 android:id="@+id/num_messages_written"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:padding="@dimen/info_text_padding"
                 android:text="@string/number_of_messages_written"
                 android:textSize="@dimen/info_text_size" />
 
