@@ -23,10 +23,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class JsonSMSDataHandler implements Runnable {
     private final Activity activity;
@@ -40,7 +39,6 @@ public class JsonSMSDataHandler implements Runnable {
     }
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
-        @SuppressLint({"ResourceType", "SetTextI18n"})
         @Override
         public void handleMessage(Message msg) {
             numOfMessagesWritten = activity.findViewById(R.id.num_messages_written);
@@ -53,10 +51,8 @@ public class JsonSMSDataHandler implements Runnable {
                     Toast.makeText(activity, "Messages imported partially", Toast.LENGTH_SHORT).show();
                 }
             }
-            jsonFileParsing.setText(activity.getResources().getString(R.string.file_parsing) + " " +
-                    (jsonFileProps.getJsonParseSuccess() ? "Success" : "Failure"));
-            numOfMessagesWritten.setText(activity.getResources().getString(R.string.number_of_messages_written) + " " +
-                    jsonFileProps.getTotalMessagesImported() + "/" + jsonFileProps.getTotalMessages());
+            jsonFileParsing.setText("File parsing: " + (jsonFileProps.getJsonParseSuccess() ? "Success" : "Not Successful"));
+            numOfMessagesWritten.setText("Total Messages Written: " + jsonFileProps.getTotalMessagesImported() + "/" + jsonFileProps.getTotalMessages());
         }
     };
 
@@ -96,8 +92,6 @@ public class JsonSMSDataHandler implements Runnable {
         if (jsonArray != null) {
             jsonFileProps.setTotalMessages(jsonArray.length());
             for (int i = 0; i < jsonArray.length(); i++) {
-                Log.i("Processing Message: ", "Json Message object: " + (i + 1));
-
                 boolean isMessageWritten = true;
                 String errorMessage = "No error !";
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -106,19 +100,29 @@ public class JsonSMSDataHandler implements Runnable {
                     String address = jsonObject.getString("address");
                     String body = jsonObject.getString("body");
                     /*
-                     * Date format from JSON data is "dd/MM/yyyy hh:mm:ss a"
+                     * Date format from JSON data is "dd/MM/yyyy HH:mm:ss"
                      * So convert it into long before writing to inbox
                      * */
-                    String dateString = jsonObject.getString("date");
+                    String dateSentInString = jsonObject.getString("date");
 
-                    final String dateFormatPattern = "dd/MM/yyyy hh:mm:ss a";
-                    DateFormat formatter = new SimpleDateFormat(dateFormatPattern, Locale.getDefault());
-                    // Parse the date string into a Date object
-                    Date date = formatter.parse(dateString);
-                    // Get the milliseconds from the Date object
-                    long dateInMillis = date.getTime();
+                    final String dateFormat = "dd/MM/yyyy HH:mm:ss";
+                    LocalDateTime localDateTime = LocalDateTime.parse(dateSentInString, DateTimeFormatter.ofPattern(dateFormat));
+                        long dateSent = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
-                    isMessageWritten = writeToInbox(id, address, body, dateInMillis);
+                    /*
+                    System.out.println("ID: " + id);
+                    System.out.println("Address: " + address);
+                    System.out.println("Body: " + body);
+                    System.out.println("Date: " + date);
+                    System.out.println("Type: " + type);
+                    System.out.println("Status: " + status);
+                    System.out.println("Sub ID: " + subId);
+                    System.out.println("Thread ID: " + threadId);
+                    System.out.println("Date Sent: " + dateSent);
+                    System.out.println("-----------------------------");
+                    */
+
+                    isMessageWritten = writeToInbox(id, address, body, dateSent);
                     if (!isMessageWritten) errorMessage = "Message not imported";
                 } catch (Exception e) {
                     Log.e("JSON Error:", e.getMessage());
@@ -138,6 +142,8 @@ public class JsonSMSDataHandler implements Runnable {
             ContentResolver contentResolver = activity.getContentResolver();
             ContentValues values = new ContentValues();
 
+            // Set the message values
+            //values.put(Telephony.Sms._ID, messageId);
             values.put(Telephony.Sms.ADDRESS, phoneNumber);
             values.put(Telephony.Sms.BODY, messageBody);
             values.put(Telephony.Sms.DATE, dateSent);
@@ -145,9 +151,12 @@ public class JsonSMSDataHandler implements Runnable {
 
             // Insert the new SMS message into the inbox
             Uri uri = contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values);
+            Log.i("SMS inserted:", "" + uri);
+
             if (uri != null) {
                 // Extract the ID from the URI
                 long insertedId = Long.parseLong(uri.getLastPathSegment());
+                //long threadId = getThreadIdForMessage(insertedId);
                 Log.d("SMS", "Message inserted successfully with ID: " + insertedId);
                 return insertedId != 0;
             } else {
