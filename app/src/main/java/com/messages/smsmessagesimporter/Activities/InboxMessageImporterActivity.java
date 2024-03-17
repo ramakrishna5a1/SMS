@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.role.RoleManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -87,11 +88,13 @@ public class InboxMessageImporterActivity extends AppCompatActivity {
 
         if(allPermissionsGranted[0] && allPermissionsGranted[1] && allPermissionsGranted[2]){
             permissionsGranted = permissionsGranted.concat("All permissions are granted !");
+            permissionsView.setTextColor(Color.BLUE);
         }else{
             permissionsGranted = permissionsGranted.concat(String.format("SMS Permission %s\n", (checkSmsPermissions() ? "Granted" : "Not granted")));
             permissionsGranted = permissionsGranted.concat(String.format("Storage Permission %s\n", (checkStoragePermissions() ? "Granted" : "Not granted")));
             permissionsGranted = permissionsGranted.concat(String.format("Default SMS App Permission %s\n\n", (checkDefaultSmsAppPermissions() ? "Granted" : "Not granted")));
             permissionsGranted = permissionsGranted.concat("Note: Please close and open App Again.!!");
+            permissionsView.setTextColor(Color.RED);
         }
         permissionsView.setText(permissionsGranted);
     }
