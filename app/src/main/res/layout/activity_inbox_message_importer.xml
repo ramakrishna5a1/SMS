@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/light_gray"
     android:padding="16dp">
 
-    <!-- Card for Permissions -->
+    <!-- Permissions Card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_permissions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/card_bottom_padding"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:elevation="4dp"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,21 +22,25 @@
                 android:id="@+id/permissions_acquired"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/info_text_padding"
                 android:text="Permissions"
-                android:textSize="@dimen/info_text_size" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"
+                android:textColor="@color/black" />
 
             <!-- Add your permission-related UI components here -->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Card for file full path -->
+    <!-- File Path Card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_file_path"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/card_bottom_padding"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:layout_below="@id/card_permissions"
+        android:layout_marginTop="8dp"
+        android:elevation="4dp"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -47,21 +51,25 @@
                 android:id="@+id/file_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/info_text_padding"
                 android:text="@string/textview"
-                android:textSize="@dimen/info_text_size" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"
+                android:textColor="@color/black" />
 
             <!-- Add your UI components related to number of messages written here -->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Card for JSON Parsing -->
+    <!-- JSON Parsing Card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_json_parsing"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/card_bottom_padding"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:layout_below="@id/card_file_path"
+        android:layout_marginTop="8dp"
+        android:elevation="4dp"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,21 +80,25 @@
                 android:id="@+id/file_parsing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/info_text_padding"
                 android:text="@string/file_parsing"
-                android:textSize="@dimen/info_text_size" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"
+                android:textColor="@color/black" />
 
             <!-- Add your JSON parsing related UI components here -->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Card for Number of Messages Written -->
+    <!-- Number of Messages Card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_num_messages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/card_bottom_padding"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:layout_below="@id/card_json_parsing"
+        android:layout_marginTop="8dp"
+        android:elevation="4dp"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -97,18 +109,26 @@
                 android:id="@+id/num_messages_written"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/info_text_padding"
                 android:text="@string/number_of_messages_written"
-                android:textSize="@dimen/info_text_size" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:padding="10dp"
+                android:textColor="@color/black" />
 
             <!-- Add your UI components related to number of messages written here -->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <!-- Import Messages Button -->
     <Button
         android:id="@+id/import_messages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/button_1" />
+        android:layout_alignParentBottom="true"
+        android:text="@string/button_1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@color/teal_700" />
 
-</LinearLayout>
+</RelativeLayout>
