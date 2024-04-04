@@ -2,27 +2,27 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="10dp">
 
     <!-- Permissions Card -->
     <LinearLayout
         android:id="@+id/card_permissions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:elevation="4dp"
         android:background="@drawable/background_white_rounded"
+        android:elevation="4dp"
+        android:orientation="vertical"
         android:padding="10dp">
 
         <TextView
             android:id="@+id/permissions_acquired"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Permissions"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:padding="10dp"
-            android:textColor="@color/black" />
+            android:text="Permissions"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <!-- Add your permission-related UI components here -->
     </LinearLayout>
@@ -32,22 +32,22 @@
         android:id="@+id/card_file_path"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:elevation="4dp"
-        android:background="@drawable/background_white_rounded"
-        android:padding="10dp"
         android:layout_below="@id/card_permissions"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="8dp"
+        android:background="@drawable/background_white_rounded"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/file_id"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/textview"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:padding="10dp"
-            android:textColor="@color/black" />
+            android:text="@string/textview"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <!-- Add your UI components related to number of messages written here -->
     </LinearLayout>
@@ -57,22 +57,22 @@
         android:id="@+id/card_json_parsing"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:elevation="4dp"
-        android:background="@drawable/background_white_rounded"
-        android:padding="10dp"
         android:layout_below="@id/card_file_path"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="8dp"
+        android:background="@drawable/background_white_rounded"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/file_parsing"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/file_parsing"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:padding="10dp"
-            android:textColor="@color/black" />
+            android:text="@string/file_parsing"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <!-- Add your JSON parsing related UI components here -->
     </LinearLayout>
@@ -82,37 +82,71 @@
         android:id="@+id/card_num_messages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:elevation="4dp"
-        android:background="@drawable/background_white_rounded"
-        android:padding="10dp"
         android:layout_below="@id/card_json_parsing"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="8dp"
+        android:background="@drawable/background_white_rounded"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/num_messages_written"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/number_of_messages_written"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:padding="10dp"
-            android:textColor="@color/black" />
-
-        <!-- Add your UI components related to number of messages written here -->
+            android:text="@string/number_of_messages_written"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/import_messages"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="@string/button_1"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:background="@drawable/button_background"
-        android:layout_marginTop="16dp"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_marginBottom="15dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Import messages From"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="15dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/import_messages_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="40"
+                android:background="@drawable/button_background"
+                android:text="@string/button_1"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/import_messages_cloud"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="40"
+                android:background="@drawable/button_background"
+                android:text="Cloud"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>

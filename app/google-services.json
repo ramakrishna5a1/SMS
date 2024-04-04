@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "35037596618",
+    "firebase_url": "https://smsimporter-b9f9b-default-rtdb.firebaseio.com",
+    "project_id": "smsimporter-b9f9b",
+    "storage_bucket": "smsimporter-b9f9b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:35037596618:android:ac4fb558634311c4911d33",
+        "android_client_info": {
+          "package_name": "com.messages.smsmessagesimporter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGQ_ZrOD8AsiOqzrjN_2ktGR6fjLKJkdU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
