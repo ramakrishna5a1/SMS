@@ -10,5 +10,6 @@ public abstract class JSONDataSource {
     public JSONDataSource(Activity activity) {
         this.activity = activity;
         this.jsonDataUtils = JSONDataUtils.getInstance();
+        callback = (DataProcessedCallback) activity;
     }
 }
