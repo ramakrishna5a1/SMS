@@ -67,7 +67,7 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
         firebaseHandler = new JSONFirebaseHandler(this);
         dataUtils = DataUtils.getInstance();
         permissionsHandler = new PermissionsHandler(this, storageActivityResultLauncher);
-        //permissionsHandler.checkAndRequestPermissions();
+        permissionsHandler.checkAndRequestPermissions();
 
         buttonFile.setOnClickListener((View v) -> {
             dataUtils.clearDataUtils();
@@ -82,15 +82,22 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
     }
 
     private void showCustomDialog() {
+        // Inflate the custom layout
         View dialogView = LayoutInflater.from(this).inflate(R.layout.auth_dialog, null);
+
+        // Find EditText in the custom layout
         EditText editTextAuthCode = dialogView.findViewById(R.id.editTextAuthCode);
+
         AlertDialog.Builder builder = getBuilder(dialogView, editTextAuthCode);
+
+        // Set Cancel button action
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+                dialog.dismiss(); // Dismiss the dialog
             }
         });
+        // Create and show the AlertDialog
         AlertDialog dialog = builder.create();
         dialog.setCancelable(false);
         dialog.show();
