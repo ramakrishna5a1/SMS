@@ -1,4 +1,4 @@
-package com.messages.smsmessagesimporter.DataHandler;
+package com.messages.smsmessagesimporter.Utils;
 
 public class SmsEntity {
     private String address;

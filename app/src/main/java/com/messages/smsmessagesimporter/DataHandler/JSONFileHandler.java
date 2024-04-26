@@ -9,13 +9,15 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.messages.smsmessagesimporter.Utils.RealPathUtil;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class JSONFileHandler extends JSONDataSource{
+public class JSONFileHandler extends JSONDataSource {
 
-    private static final int REQUEST_PICK_FILE = 123;
+    private static final int REQUEST_PICK_FILE = 104;
 
     public JSONFileHandler(Activity activity) {
         super(activity);
@@ -38,31 +40,26 @@ public class JSONFileHandler extends JSONDataSource{
                 if (uri != null) {
                     selectedFilePath = RealPathUtil.getRealPath(activity, uri);
                 }
-                jsonDataUtils.setJsonFilePath(selectedFilePath);
-                Log.i("Selected File Path:", jsonDataUtils.getJsonFilePath());
+                dataUtils.setJsonFilePath(selectedFilePath);
+                Log.i("Selected File Path:", dataUtils.getJsonFilePath());
 
                 // Start a new thread to read the file content
-                new Thread(() -> {
-                    try {
-                        readFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
+                new Thread(this::readJsonStringFromSource).start();
             }
         }
     }
 
-    private void readFile() throws IOException {
+    public void readJsonStringFromSource() {
         StringBuilder content = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(jsonDataUtils.getJsonFilePath()))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(dataUtils.getJsonFilePath()))) {
             String line;
             while ((line = br.readLine()) != null) {
                 content.append(line);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        jsonDataUtils.setJsonString(content.toString());
-        // If you need to update UI after reading the file, use Handler to post a Runnable on the UI thread
+        dataUtils.setJsonString(content.toString());
         new Handler(Looper.getMainLooper()).post(() -> {
             callback.onJSONDataReadDone();
         });

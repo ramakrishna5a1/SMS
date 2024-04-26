@@ -1,27 +1,37 @@
 package com.messages.smsmessagesimporter.DataHandler;
 
+import com.messages.smsmessagesimporter.Utils.SmsEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class JSONDataUtils {
-    private static JSONDataUtils instance;
+public class DataUtils {
+    private static DataUtils instance;
     private String JsonFilePath;
     private Boolean isJsonParseSuccess;
     private String jsonString;
-    private int totalObjectsProcessed;
+    private int totalObjects;
     private List<SmsEntity> smsEntityList;
 
-    private JSONDataUtils() {
+    private DataUtils() {
         JsonFilePath = "NULL";
         jsonString = "NULL";
-        isJsonParseSuccess = true;
-        totalObjectsProcessed = 0;
+        isJsonParseSuccess = false;
+        totalObjects = 0;
         smsEntityList = new ArrayList<>(200);
     }
 
-    public static synchronized JSONDataUtils getInstance() {
+    public void clearDataUtils() {
+        JsonFilePath = "NULL";
+        jsonString = "NULL";
+        isJsonParseSuccess = false;
+        totalObjects = 0;
+        smsEntityList.clear();
+    }
+
+    public static synchronized DataUtils getInstance() {
         if (instance == null) {
-            instance = new JSONDataUtils();
+            instance = new DataUtils();
         }
         return instance;
     }
@@ -50,13 +60,14 @@ public class JSONDataUtils {
         this.jsonString = jsonString;
     }
 
-    public int getTotalObjectsProcessed() {
-        return totalObjectsProcessed;
+    public int getTotalObjects() {
+        return totalObjects;
     }
 
-    public void setTotalObjectsProcessed(int totalObjectsProcessed) {
-        this.totalObjectsProcessed = totalObjectsProcessed;
+    public void setTotalObjects(int totalObjects) {
+        this.totalObjects = totalObjects;
     }
+
     public List<SmsEntity> getSmsEntityList() {
         return smsEntityList;
     }

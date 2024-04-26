@@ -1,4 +1,4 @@
-package com.messages.smsmessagesimporter.DataHandler;
+package com.messages.smsmessagesimporter.Utils;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

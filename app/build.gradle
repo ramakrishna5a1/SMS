@@ -49,7 +49,7 @@ android {
 }
 
 dependencies {
-
+    testImplementation libs.mockito.mockito.core
     implementation libs.appcompat
     implementation libs.material
     implementation libs.lifecycle.runtime.ktx

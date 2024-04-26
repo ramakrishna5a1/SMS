@@ -11,31 +11,24 @@ import android.os.Message;
 import android.provider.Telephony;
 import android.util.Log;
 
+import com.messages.smsmessagesimporter.Utils.SmsEntity;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SMSManager implements Runnable {
-    private int totalMessages;
-    private int totalMessagesImported;
+    private static final String CLASS_TAG = "SMSManager";
     private Map<Integer, String> messagesNotImported;
     private final Activity activity;
-    private final JSONDataUtils jsonDataUtils;
+    private final DataUtils dataUtils;
+    private DataProcessedCallback callback;
 
     public SMSManager(Activity activity) {
         this.activity = activity;
-        totalMessages = 0;
-        totalMessagesImported = 0;
         messagesNotImported = new HashMap<>();
-        this.jsonDataUtils = JSONDataUtils.getInstance();
-    }
-
-    public int getTotalMessages() {
-        return totalMessages;
-    }
-
-    public int getTotalMessagesImported() {
-        return totalMessagesImported;
+        this.dataUtils = DataUtils.getInstance();
+        callback = (DataProcessedCallback) activity;
     }
 
     public Map<Integer, String> getMessagesNotImported() {
@@ -46,18 +39,19 @@ public class SMSManager implements Runnable {
         @SuppressLint({"ResourceType", "SetTextI18n"})
         @Override
         public void handleMessage(Message msg) {
-            writeToInbox();
+            callback.onMessagesImported();
         }
     };
 
     @Override
     public void run() {
         writeToInbox();
+        handler.sendEmptyMessage(0);
     }
 
     public Boolean writeToInbox() {
-        List<SmsEntity> smsEntityList = jsonDataUtils.getSmsEntityList();
-        Log.i("SMS List Size:", "" + smsEntityList.size());
+        List<SmsEntity> smsEntityList = dataUtils.getSmsEntityList();
+        Log.i(CLASS_TAG, "Total Messages: " + smsEntityList.size());
         for (SmsEntity smsEntity : smsEntityList) {
             try {
                 ContentResolver contentResolver = activity.getContentResolver();

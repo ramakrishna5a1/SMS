@@ -7,13 +7,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.messages.smsmessagesimporter.Utils.SmsEntity;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,14 +21,13 @@ import java.util.Locale;
 public class JSONDataParser implements Runnable {
     private static final String CLASS_TAG = "JSONDataParser";
     private final Activity activity;
-    private String jsonString;
-    private final JSONDataUtils jsonDataUtils;
+    private final DataUtils dataUtils;
     private DataProcessedCallback callback;
 
     public JSONDataParser(Activity activity) {
         this.activity = activity;
         callback = (DataProcessedCallback) activity;
-        this.jsonDataUtils = JSONDataUtils.getInstance();
+        this.dataUtils = DataUtils.getInstance();
     }
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -43,24 +41,12 @@ public class JSONDataParser implements Runnable {
     @Override
     public void run() {
         try {
-            readFile();
-            parseJsonArray(jsonDataUtils.getJsonString());
-        } catch (IOException | JSONException e) {
-            jsonDataUtils.setJsonParseSuccess(false);
+            parseJsonArray(dataUtils.getJsonString());
+        } catch (JSONException e) {
+            dataUtils.setJsonParseSuccess(false);
             e.printStackTrace();
         }
         handler.sendEmptyMessage(0);
-    }
-
-    private void readFile() throws IOException {
-        StringBuilder content = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(jsonDataUtils.getJsonFilePath()))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                content.append(line);
-            }
-        }
-        jsonDataUtils.setJsonString(content.toString());
     }
 
     private void parseJsonArray(String jsonString) throws JSONException {
@@ -72,11 +58,13 @@ public class JSONDataParser implements Runnable {
         }
 
         if (jsonArray != null) {
-            jsonDataUtils.getSmsEntityList().clear();
-            int objectsSuccessful = 0;
+            dataUtils.getSmsEntityList().clear();
+            dataUtils.setTotalObjects(jsonArray.length());
+            Log.i(CLASS_TAG, "Json Object Count: " + dataUtils.getTotalObjects());
             for (int jsonObjIdx = 0; jsonObjIdx < jsonArray.length(); ++jsonObjIdx) {
-                JSONObject jsonObject = jsonArray.getJSONObject(jsonObjIdx);
                 try {
+                    JSONObject jsonObject = jsonArray.getJSONObject(jsonObjIdx);
+
                     String address = jsonObject.getString("address");
                     String body = jsonObject.getString("body");
                     /*
@@ -91,12 +79,10 @@ public class JSONDataParser implements Runnable {
                     // Get the milliseconds from the Date object
                     long dateInMillis = date.getTime();
                     SmsEntity singleEntity = new SmsEntity(address, body, dateInMillis, dateString);
-                    jsonDataUtils.getSmsEntityList().add(singleEntity);
-                    ++objectsSuccessful;
+                    dataUtils.getSmsEntityList().add(singleEntity);
                 } catch (Exception e) {
                     Log.e("JSON Error:", e.getMessage());
                 }
-                jsonDataUtils.setTotalObjectsProcessed(objectsSuccessful);
             }
         }
     }

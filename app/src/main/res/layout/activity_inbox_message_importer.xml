@@ -18,13 +18,11 @@
             android:id="@+id/permissions_acquired"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="Permissions"
+            android:padding="@dimen/info_padding"
+            android:text="@string/permissions"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
-
-        <!-- Add your permission-related UI components here -->
     </LinearLayout>
 
     <!-- File Path Card -->
@@ -40,16 +38,14 @@
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/file_id"
+            android:id="@+id/json_source"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="@string/textview"
+            android:padding="@dimen/info_padding"
+            android:text="@string/data_source"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
-
-        <!-- Add your UI components related to number of messages written here -->
     </LinearLayout>
 
     <!-- JSON Parsing Card -->
@@ -65,16 +61,14 @@
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/file_parsing"
+            android:id="@+id/data_parsing"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:padding="@dimen/info_padding"
             android:text="@string/file_parsing"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
-
-        <!-- Add your JSON parsing related UI components here -->
     </LinearLayout>
 
     <!-- Number of Messages Card -->
@@ -93,7 +87,7 @@
             android:id="@+id/num_messages_written"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:padding="@dimen/info_padding"
             android:text="@string/number_of_messages_written"
             android:textColor="@color/black"
             android:textSize="18sp"
@@ -104,13 +98,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="10dp"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Import messages From"
+            android:layout_marginLeft="4dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/import_messages_from"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -118,7 +114,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="0dp"
             android:orientation="horizontal">
 
             <Button
@@ -127,7 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_gravity="center_horizontal"
-                android:layout_weight="40"
+                android:layout_weight="1"
                 android:background="@drawable/button_background"
                 android:text="@string/button_1"
                 android:textColor="@android:color/white"
@@ -139,13 +135,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_weight="40"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
                 android:background="@drawable/button_background"
                 android:text="Cloud"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
     </LinearLayout>
 
