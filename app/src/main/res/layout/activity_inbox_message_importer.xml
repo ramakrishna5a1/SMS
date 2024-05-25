@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:padding="10dp">
 
-    <!-- Permissions Card -->
     <LinearLayout
         android:id="@+id/card_permissions"
         android:layout_width="match_parent"
@@ -27,7 +26,7 @@
 
     <!-- File Path Card -->
     <LinearLayout
-        android:id="@+id/card_file_path"
+        android:id="@+id/card_data_source_path"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/card_permissions"
@@ -38,7 +37,7 @@
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/json_source"
+            android:id="@+id/data_source"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/info_padding"
@@ -53,7 +52,7 @@
         android:id="@+id/card_json_parsing"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/card_file_path"
+        android:layout_below="@id/card_data_source_path"
         android:layout_marginTop="8dp"
         android:background="@drawable/background_white_rounded"
         android:elevation="4dp"
@@ -80,17 +79,31 @@
         android:layout_marginTop="8dp"
         android:background="@drawable/background_white_rounded"
         android:elevation="4dp"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="10dp">
 
         <TextView
             android:id="@+id/num_messages_written"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
             android:padding="@dimen/info_padding"
             android:text="@string/number_of_messages_written"
             android:textColor="@color/black"
             android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/view_messages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/button_background"
+            android:text="view"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -104,7 +117,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
             android:layout_marginBottom="8dp"
             android:text="@string/import_messages_from"
             android:textColor="@color/black"
@@ -121,7 +134,6 @@
                 android:id="@+id/import_messages_file"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="1"
                 android:background="@drawable/button_background"
@@ -138,11 +150,10 @@
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/button_background"
-                android:text="Cloud"
+                android:text="Server"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
-
 </RelativeLayout>

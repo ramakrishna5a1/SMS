@@ -9,10 +9,13 @@
     <string name="button_2">Change default SMS app</string>
     <string name="title_activity_home">HomeActivity</string>
 
-    <string name="permissions">Permissions: NA</string>
-    <string name="data_source">Data source: NA</string>
-    <string name="file_parsing">Data fetch: NA</string>
-    <string name="number_of_messages_written">Messages Imported: NA</string>
+    <string name="permissions">Permissions:</string>
+    <string name="data_source">Data source:</string>
+    <string name="file_parsing">Data fetch:</string>
+    <string name="number_of_messages_written">Messages Imported:</string>
     <string name="import_messages_from">Import messages From:</string>
+    <string name="message_body">Dear Customer, Rs 647.79 debited from ICICI Bank Prepaid Card 0199 on 21-Apr-24. Info- Avenue Superm. The Available Balance is Rs 757.07 . Call 022 50405238 for dispute or SMS BLOCK 0199 to 9215676766.</string>
+    <string name="message_date_time">11/05/1998 08:27:00 PM</string>
+    <string name="message_sender">RK-HDFCBK</string>
 
 </resources>

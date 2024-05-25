@@ -16,7 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class JSONFileHandler extends JSONDataSource {
-
+    private final String CLASS_TAG = "JSONFileHandler";
     private static final int REQUEST_PICK_FILE = 104;
 
     public JSONFileHandler(Activity activity) {
@@ -40,8 +40,8 @@ public class JSONFileHandler extends JSONDataSource {
                 if (uri != null) {
                     selectedFilePath = RealPathUtil.getRealPath(activity, uri);
                 }
-                dataUtils.setJsonFilePath(selectedFilePath);
-                Log.i("Selected File Path:", dataUtils.getJsonFilePath());
+                dataUtils.setJsonSourcePath(selectedFilePath);
+                Log.i("Selected File Path:", dataUtils.getJsonSourcePath());
 
                 // Start a new thread to read the file content
                 new Thread(this::readJsonStringFromSource).start();
@@ -51,13 +51,14 @@ public class JSONFileHandler extends JSONDataSource {
 
     public void readJsonStringFromSource() {
         StringBuilder content = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(dataUtils.getJsonFilePath()))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(dataUtils.getJsonSourcePath()))) {
             String line;
             while ((line = br.readLine()) != null) {
                 content.append(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Log.e(CLASS_TAG,e.getMessage());
+            //throw new RuntimeException(e);
         }
         dataUtils.setJsonString(content.toString());
         new Handler(Looper.getMainLooper()).post(() -> {

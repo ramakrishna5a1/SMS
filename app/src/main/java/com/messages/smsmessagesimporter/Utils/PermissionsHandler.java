@@ -21,6 +21,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class PermissionsHandler {
     private static final int REQUEST_CODE_SMS_PERMISSION = 100;
     private static final int STORAGE_PERMISSION_CODE = 101;
@@ -28,7 +31,7 @@ public class PermissionsHandler {
     private static final int NETWORK_PERMISSION = 103;
 
     private final String[] smsPermissions = new String[]{Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS};
-    private boolean[] allPermissionsGranted = new boolean[3];
+    private boolean[] allPermissionsGranted = new boolean[4];
 
     private final FragmentActivity activity;
     private final ActivityResultLauncher<Intent> storageActivityResultLauncher;
@@ -42,7 +45,7 @@ public class PermissionsHandler {
         allPermissionsGranted[0] = checkSmsPermissions();
         allPermissionsGranted[1] = checkStoragePermissions();
         allPermissionsGranted[2] = checkDefaultSmsAppPermissions();
-
+        allPermissionsGranted[3] = checkNetworkPermissions();
         if (!allPermissionsGranted[0]) {
             requestSmsPermissions();
             allPermissionsGranted[0] = checkSmsPermissions();
@@ -52,25 +55,33 @@ public class PermissionsHandler {
             allPermissionsGranted[1] = checkStoragePermissions();
         }
         if (!allPermissionsGranted[2]) {
-            askDefaultSmsHandlerPermission();
+            requestDefaultSmsHandlerPermission();
             allPermissionsGranted[2] = checkDefaultSmsAppPermissions();
         }
-        if (!checkNetworkPermissions()) {
+        if (!allPermissionsGranted[3]) {
             requestNetworkPermission();
+            allPermissionsGranted[3] = checkNetworkPermissions();
         }
     }
 
-    public void updatePermissionsText(TextView permissionsView) {
+    public void updatePermissionsText(TextView permissionsView)
+    {
+        allPermissionsGranted[0] = checkSmsPermissions();
+        allPermissionsGranted[1] = checkStoragePermissions();
+        allPermissionsGranted[2] = checkDefaultSmsAppPermissions();
+        allPermissionsGranted[3] = checkNetworkPermissions();
         String permissionsGranted = "";
-
-        if (allPermissionsGranted[0] && allPermissionsGranted[1] && allPermissionsGranted[2]) {
+        if (allPermissionsGranted[0] && allPermissionsGranted[1] && allPermissionsGranted[2])
+        {
             permissionsGranted = permissionsGranted.concat("All permissions are granted !");
             permissionsView.setTextColor(Color.BLUE);
-        } else {
+        }
+        else
+        {
             permissionsGranted = permissionsGranted.concat("Grant below permissions:\n");
-            if(!allPermissionsGranted[0]) permissionsGranted = permissionsGranted.concat("- SMS Permission\n");
-            if(!allPermissionsGranted[1]) permissionsGranted = permissionsGranted.concat("- Storage Permission\n");
-            if(!allPermissionsGranted[2]) permissionsGranted = permissionsGranted.concat("- Default SMS App Permission\n");
+            if (!allPermissionsGranted[0]) permissionsGranted = permissionsGranted.concat("SMS Permission\n");
+            if (!allPermissionsGranted[1]) permissionsGranted = permissionsGranted.concat("Storage Permission\n");
+            if (!allPermissionsGranted[2]) permissionsGranted = permissionsGranted.concat("Default SMS App Permission\n");
             permissionsGranted = permissionsGranted.concat("Note: Please close and open App Again.!!");
             permissionsView.setTextColor(Color.RED);
         }
@@ -122,7 +133,7 @@ public class PermissionsHandler {
         }
     }
 
-    private void askDefaultSmsHandlerPermission() {
+    private void requestDefaultSmsHandlerPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             RoleManager roleManager = activity.getSystemService(RoleManager.class);
             String role = ROLE_SMS;
@@ -167,11 +178,7 @@ public class PermissionsHandler {
             }
         } else {
             //Below android 11
-            ActivityCompat.requestPermissions(
-                    activity,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
-                    STORAGE_PERMISSION_CODE
-            );
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
         }
     }
 

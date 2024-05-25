@@ -16,6 +16,7 @@ import com.messages.smsmessagesimporter.Utils.SmsEntity;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class SMSManager implements Runnable {
     private static final String CLASS_TAG = "SMSManager";
@@ -50,9 +51,10 @@ public class SMSManager implements Runnable {
     }
 
     public Boolean writeToInbox() {
-        List<SmsEntity> smsEntityList = dataUtils.getSmsEntityList();
+        List<SmsEntity> smsEntityList = dataUtils.smsEntityList;
         Log.i(CLASS_TAG, "Total Messages: " + smsEntityList.size());
-        for (SmsEntity smsEntity : smsEntityList) {
+        for (int msgIdx = 0; msgIdx < smsEntityList.size(); msgIdx++) {
+            SmsEntity smsEntity = smsEntityList.get(msgIdx);
             try {
                 ContentResolver contentResolver = activity.getContentResolver();
                 ContentValues values = new ContentValues();
@@ -60,12 +62,14 @@ public class SMSManager implements Runnable {
                 values.put(Telephony.Sms.BODY, smsEntity.getBody());
                 values.put(Telephony.Sms.DATE, smsEntity.getDate());
                 values.put(Telephony.Sms.READ, 1);  // 1 means the message has been read
-
                 // Insert the new SMS message into the inbox
                 Uri uri = contentResolver.insert(Telephony.Sms.Inbox.CONTENT_URI, values);
                 if (uri != null) {
                     // Extract the ID from the URI
-                    long insertedId = Long.parseLong(uri.getLastPathSegment());
+                    long insertedId = Long.parseLong(Objects.requireNonNull(uri.getLastPathSegment()));
+                    if (insertedId != 0) {
+                        dataUtils.insertedMessageIndexes.add(msgIdx);
+                    }
                     Log.d("SMS", "Inserted ID: " + insertedId);
                 } else {
                     Log.e("SMS", "URI is NULL");

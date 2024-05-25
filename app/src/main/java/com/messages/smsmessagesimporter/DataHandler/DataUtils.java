@@ -3,30 +3,35 @@ package com.messages.smsmessagesimporter.DataHandler;
 import com.messages.smsmessagesimporter.Utils.SmsEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DataUtils {
     private static DataUtils instance;
-    private String JsonFilePath;
+    private String JsonSourcePath;
     private Boolean isJsonParseSuccess;
     private String jsonString;
     private int totalObjects;
-    private List<SmsEntity> smsEntityList;
+    public List<SmsEntity> smsEntityList;
+    public Set<Integer> insertedMessageIndexes;
 
     private DataUtils() {
-        JsonFilePath = "NULL";
+        JsonSourcePath = "NULL";
         jsonString = "NULL";
         isJsonParseSuccess = false;
         totalObjects = 0;
-        smsEntityList = new ArrayList<>(200);
+        smsEntityList = new ArrayList<>(500);
+        insertedMessageIndexes = new HashSet<>(500);
     }
 
     public void clearDataUtils() {
-        JsonFilePath = "NULL";
+        JsonSourcePath = "NULL";
         jsonString = "NULL";
         isJsonParseSuccess = false;
         totalObjects = 0;
         smsEntityList.clear();
+        insertedMessageIndexes.clear();
     }
 
     public static synchronized DataUtils getInstance() {
@@ -44,12 +49,12 @@ public class DataUtils {
         isJsonParseSuccess = jsonParseSuccess;
     }
 
-    public String getJsonFilePath() {
-        return JsonFilePath;
+    public String getJsonSourcePath() {
+        return JsonSourcePath;
     }
 
-    public void setJsonFilePath(String jsonFilePath) {
-        JsonFilePath = jsonFilePath;
+    public void setJsonSourcePath(String jsonSourcePath) {
+        JsonSourcePath = jsonSourcePath;
     }
 
     public String getJsonString() {
@@ -66,9 +71,5 @@ public class DataUtils {
 
     public void setTotalObjects(int totalObjects) {
         this.totalObjects = totalObjects;
-    }
-
-    public List<SmsEntity> getSmsEntityList() {
-        return smsEntityList;
     }
 }

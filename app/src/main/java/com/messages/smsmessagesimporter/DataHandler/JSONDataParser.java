@@ -27,7 +27,7 @@ public class JSONDataParser implements Runnable {
     public JSONDataParser(Activity activity) {
         this.activity = activity;
         callback = (DataProcessedCallback) activity;
-        this.dataUtils = DataUtils.getInstance();
+        dataUtils = DataUtils.getInstance();
     }
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -53,18 +53,17 @@ public class JSONDataParser implements Runnable {
         JSONArray jsonArray = null;
         try {
             jsonArray = new JSONArray(jsonString);
+            dataUtils.setJsonParseSuccess(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         if (jsonArray != null) {
-            dataUtils.getSmsEntityList().clear();
+            dataUtils.smsEntityList.clear();
             dataUtils.setTotalObjects(jsonArray.length());
             Log.i(CLASS_TAG, "Json Object Count: " + dataUtils.getTotalObjects());
             for (int jsonObjIdx = 0; jsonObjIdx < jsonArray.length(); ++jsonObjIdx) {
                 try {
                     JSONObject jsonObject = jsonArray.getJSONObject(jsonObjIdx);
-
                     String address = jsonObject.getString("address");
                     String body = jsonObject.getString("body");
                     /*
@@ -79,7 +78,7 @@ public class JSONDataParser implements Runnable {
                     // Get the milliseconds from the Date object
                     long dateInMillis = date.getTime();
                     SmsEntity singleEntity = new SmsEntity(address, body, dateInMillis, dateString);
-                    dataUtils.getSmsEntityList().add(singleEntity);
+                    dataUtils.smsEntityList.add(singleEntity);
                 } catch (Exception e) {
                     Log.e("JSON Error:", e.getMessage());
                 }

@@ -15,16 +15,19 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class JSONFirebaseHandler extends JSONDataSource {
     private final String CLASS_TAG = "JSONFirebaseHandler";
     DatabaseReference spreadSheetReference;
     private String childSheet;
+    private final DataUtils dataUtils;
 
     public JSONFirebaseHandler(Activity activity) {
         super(activity);
         spreadSheetReference = FirebaseDatabase.getInstance().getReference().child("188QW_O4u37PvjObCHr5UHbBJQgjBjPjwr73uwbDG5A4");
+        dataUtils = DataUtils.getInstance();
     }
 
     public CompletableFuture<Boolean> authenticateUser(String authCode) {
@@ -33,6 +36,7 @@ public class JSONFirebaseHandler extends JSONDataSource {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 boolean childSheetFound = snapshot.hasChild(authCode);
+                childSheet = authCode;
                 future.complete(childSheetFound);
             }
             @Override
@@ -53,46 +57,46 @@ public class JSONFirebaseHandler extends JSONDataSource {
 
     @Override
     protected void readJsonStringFromSource() {
+        if (!Objects.equals(childSheet, "")) {
+            Log.e(CLASS_TAG, "Child source is empty.");
+        }
         Task<DataSnapshot> dataSnapshotTask = spreadSheetReference
-                .child(childSheet)
-                .get();
-
-        dataSnapshotTask.addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DataSnapshot dataSnapshot = task.getResult();
-                    if (dataSnapshot.exists()) {
-                        StringBuilder stringBuilder = new StringBuilder();
-                        stringBuilder.append("[");
-                        //Process all the messages under given sheet
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            HashMap<String, Object> data = (HashMap<String, Object>) snapshot.getValue();
-                            if (data != null) {
-                                stringBuilder.append("{");
-                                for (Map.Entry<String, Object> entry : data.entrySet()) {
-                                    String key = entry.getKey();
-                                    Object value = entry.getValue();
-                                    stringBuilder.append("  \"").append(key).append("\": \"").append(value).append("\",");
-                                }
-                                // Remove the trailing comma and newline
-                                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                                stringBuilder.append("},");
+            .child(childSheet)
+            .get();
+        dataUtils.setJsonSourcePath("https://data.serverio.com/"+childSheet);
+        dataSnapshotTask.addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DataSnapshot dataSnapshot = task.getResult();
+                if (dataSnapshot.exists()) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("[");
+                    //Process all the messages under given sheet
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        HashMap<String, Object> data = (HashMap<String, Object>) snapshot.getValue();
+                        if (data != null) {
+                            stringBuilder.append("{");
+                            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                                String key = entry.getKey();
+                                Object value = entry.getValue();
+                                stringBuilder.append("  \"").append(key).append("\": \"").append(value).append("\",");
                             }
+                            // Remove the trailing comma and newline
+                            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                            stringBuilder.append("},");
                         }
-                        // Remove the trailing comma and newline
-                        if (stringBuilder.length() > 2) {
-                            stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
-                        }
-                        stringBuilder.append("]");
-
-                        String result = stringBuilder.toString();
-                        dataUtils.setJsonString(result);
-                        callback.onJSONDataReadDone();
                     }
-                } else {
-                    Log.e("FirebaseError", "Error: " + task.getException().getMessage());
+                    // Remove the trailing comma and newline
+                    if (stringBuilder.length() > 2) {
+                        stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
+                    }
+                    stringBuilder.append("]");
+
+                    String result = stringBuilder.toString();
+                    dataUtils.setJsonString(result);
+                    callback.onJSONDataReadDone();
                 }
+            } else {
+                Log.e("FirebaseError", "Error: " + task.getException().getMessage());
             }
         });
     }

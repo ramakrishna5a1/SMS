@@ -4,7 +4,6 @@ import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +52,10 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
     Button buttonFile = null;
     Button buttonCloud = null;
     TextView permissionsView = null;
+    TextView dataSourcePath = null;
+    TextView dataParse = null;
+    TextView numMessagesWritten = null;
+    Button buttonViewMessages = null;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -61,86 +65,88 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
 
         buttonFile = findViewById(R.id.import_messages_file);
         buttonCloud = findViewById(R.id.import_messages_cloud);
+        buttonViewMessages = findViewById(R.id.view_messages);
+
         permissionsView = findViewById(R.id.permissions_acquired);
+        dataSourcePath = findViewById(R.id.data_source);
+        dataParse = findViewById(R.id.data_parsing);
+        numMessagesWritten = findViewById(R.id.num_messages_written);
 
         fileHandler = new JSONFileHandler(this);
         firebaseHandler = new JSONFirebaseHandler(this);
         dataUtils = DataUtils.getInstance();
         permissionsHandler = new PermissionsHandler(this, storageActivityResultLauncher);
         permissionsHandler.checkAndRequestPermissions();
+        permissionsHandler.updatePermissionsText(permissionsView);
 
         buttonFile.setOnClickListener((View v) -> {
             dataUtils.clearDataUtils();
             fileHandler.pickFile();
+            updateInfoText();
         });
         buttonCloud.setOnClickListener((View v) -> {
             dataUtils.clearDataUtils();
-            //boolean ret = firebaseHandler.authenticateUser("");
-            //if (ret) firebaseHandler.processChild();
             showCustomDialog();
+            updateInfoText();
+        });
+        updateInfoText();
+        buttonViewMessages.setOnClickListener((View v) -> {
+            if(dataUtils.smsEntityList.size() != 0){
+                Intent intent = new Intent(DataImporterActivity.this, SmsListActivity.class);
+                startActivity(intent);
+            }else {
+                Toast.makeText(this, "No messages", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void showCustomDialog() {
-        // Inflate the custom layout
         View dialogView = LayoutInflater.from(this).inflate(R.layout.auth_dialog, null);
-
-        // Find EditText in the custom layout
         EditText editTextAuthCode = dialogView.findViewById(R.id.editTextAuthCode);
-
-        AlertDialog.Builder builder = getBuilder(dialogView, editTextAuthCode);
-
-        // Set Cancel button action
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss(); // Dismiss the dialog
-            }
-        });
-        // Create and show the AlertDialog
-        AlertDialog dialog = builder.create();
-        dialog.setCancelable(false);
-        dialog.show();
-    }
-
-    @NonNull
-    private AlertDialog.Builder getBuilder(View dialogView, EditText editTextAuthCode) {
+        TextView cancel = dialogView.findViewById(R.id.auth_cancel);
+        TextView ok = dialogView.findViewById(R.id.auth_ok);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialogView); // Set the custom layout to the dialog
-        // Set OK button action
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            String authCode = editTextAuthCode.getText().toString();
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        cancel.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+        ok.setOnClickListener(v -> {
+            String authCode = editTextAuthCode.getText().toString().trim();
             if (!Objects.equals(authCode, "")) {
                 CompletableFuture<Boolean> ret = firebaseHandler.authenticateUser(authCode);
                 ret.thenAccept(isAuthenticated -> {
                             if (isAuthenticated) {
                                 Log.i(CLASS_TAG, "Spread sheet have child: " + authCode);
+                                Toast.makeText(this, "User found!", Toast.LENGTH_LONG).show();
                                 firebaseHandler.processChild();
                             } else {
                                 Log.i(CLASS_TAG, "Spread sheet doesn't have child: " + authCode);
-                                Toast.makeText(this, "No user found!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "No user found!", Toast.LENGTH_LONG).show();
                             }
                         })
                         .exceptionally(e -> {
-                                    // Handle exception
                                     return null;
                                 }
                         );
                 dialog.dismiss();
+            } else {
+                Toast.makeText(this, "Enter code..!", Toast.LENGTH_LONG).show();
             }
         });
-        return builder;
+        dialog.setCancelable(true);
+        dialog.show();
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == DEFAULT_SMS_APP_PERMISSION_CODE) {
             permissionsHandler.handleDefaultSmsAppPermissionResult(resultCode);
+            permissionsHandler.updatePermissionsText(permissionsView);
         } else if (requestCode == REQUEST_PICK_FILE) {
             if (resultCode != RESULT_OK) {
-                dataUtils.setJsonFilePath("NULL");
+                dataUtils.setJsonSourcePath("NULL");
                 return;
             }
             fileHandler.handleActivityResult(requestCode, resultCode, data);
@@ -179,12 +185,12 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
                 Log.i("Request Permission Result Invalid", "Code: " + requestCode);
                 break;
         }
+        permissionsHandler.updatePermissionsText(permissionsView);
     }
 
     @Override
     public void onJSONSourceSelected() {
-        /*
-         * Source selected so start reading data*/
+        // Source selected so start reading data
     }
 
     @Override
@@ -192,8 +198,8 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
         /*
          * JSON Data read done so start parsing the data
          * */
-        Log.i("DataImporterActivity", "onJSONDataReadDone");
-        Log.i("JSON String", dataUtils.getJsonString());
+        Log.i(CLASS_TAG, "onJSONDataReadDone");
+        Log.i(CLASS_TAG, dataUtils.getJsonString());
         if (!Objects.equals(dataUtils.getJsonString(), "NULL")) {
             new Thread(new JSONDataParser(this)).start();
         }
@@ -204,13 +210,22 @@ public class DataImporterActivity extends AppCompatActivity implements DataProce
         /*
          * JSON data parsed so start importing messages
          * */
-        Log.i("DataImporterActivity", "onJSONDataProcessed");
-        if (!dataUtils.getSmsEntityList().isEmpty()) {
+        Log.i(CLASS_TAG, "onJSONDataProcessed");
+        if (!dataUtils.smsEntityList.isEmpty()) {
             new Thread(new SMSManager(this)).start();
         }
     }
 
     @Override
     public void onMessagesImported() {
+        updateInfoText();
+    }
+
+    private void updateInfoText() {
+        dataSourcePath.setText(getResources().getString(R.string.data_source) + "\n" + dataUtils.getJsonSourcePath());
+        String dataFetchSuccessOrFailure = dataUtils.getJsonParseSuccess() ? "Success" : "Failure";
+        dataParse.setText(getResources().getString(R.string.file_parsing) + " " + dataFetchSuccessOrFailure);
+        numMessagesWritten.setText(getResources().getString(R.string.number_of_messages_written) + " " + dataUtils.insertedMessageIndexes.size() + "/" + dataUtils.smsEntityList.size());
+        buttonViewMessages.setEnabled(!dataUtils.smsEntityList.isEmpty());
     }
 }
